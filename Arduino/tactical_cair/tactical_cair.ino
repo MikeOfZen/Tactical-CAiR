@@ -2,55 +2,77 @@
  *  Application to configure and control the Tactical CAIR ventilator
  *  Jonathan Evans
  *  27-3-2020
-
-Sweeper Class controls the Servo
-Relay Class controls the Relay
-Alarm Class controls the beeper
-Any number of class instances can be created for multiple servos, relays etc...
-All code is non-blocking with no delays.  
-No code is currently in the main loop, the Timer0 interrupt has the program in a loop for testing. 
+ *  version 3.0
+ 
+Release Notes:
+ - Added start stop button fucntionality
+ - Hard coded I/E ratio and used iTime & eTime times to drive the EV relay
+ 
+General Notes:
+- Sweeper Class controls the Servo
+- Relay Class controls the Relay
+- Any number of class instances can be created for multiple servos, relays etc...
+- All code is non-blocking with no delays.  
+- Timer0 - used for millis(), micros(), delay() and PWM on pins 5 & 6
+- Timer1 - used for Servos, and PWM on pins 9 & 10
+- Timer2 - used by Tone and PWM on pins 11 & 13
+ 
 
 */
 #include <Servo.h> 
-//Relay configuration
-int relay_pin=7;  //relay pin
-unsigned long relay_open_interval=5000; //ms time interval the relay stays open
-unsigned long relay_closed_interval=2000; //ms time interval the relay stays closed
+//exhaust_valve configuration
+#define EXHAUST_VALVE_PIN 9  //1=open valve;0=close valve
+//Servo configuration 
+#define SERVO_START 0 //degrees
+#define SERVO_END 90  //degrees
+#define SERVO_SPEED 2 //1=fastest 10=slower, 20=slower etc... the actual speed depends on the servo
+//Polarity of relay settings
+#define EV_OPEN 1
+#define EV_CLOSED 0
 
-//Servo configuration
-int servo_pin=9; //the pin driving the servo
-int sweep_angle=90;//degrees
-int servo_speed=1; //1=fastest 10=slower, 20=slower etc... the actual speed depends on the servo
-unsigned long servo_open_interval=3000;    //ms time interval the servo stays open
-unsigned long servo_closed_interval=1000;  //ms time interval the servo stays closed
+//I/E ratio variables
+float iTime; //ms Inspitory time (hardcoded for now)
+int bMin; //Respitory rate (hard coded for now)
+float cycle_time; //Total cycle time
+float eTime; //Explitory time
+float ie_ratio; // I/E Ratio (Inspiratory-to-expiratory time)
 
-//Alarm configuration
-int beep_interval=500; //interval between alarm beeps
-int alarm_pin=11; //the alarm pin
+//UI Inputs:
+//To be connected to the UI when it is built
+//int stop_button_pin = 3; //Start button pin
+//int start_button_pin = 2; //Stop button pin
+
+int control_ind = false; //flag used to start/stop the EV 1=Start, 0=Stop
+
+void startEVCycle();
+
 
 class Sweeper
 {
   Servo servo;              // the servo
   int pos;                  // current servo position 
   int increment;            // increment to move for each interval
-  unsigned long updateInterval;      // interval between updates
-  unsigned long open_interval;
-  unsigned long closed_interval;
+  int  updateInterval;      // interval between updates
   unsigned long lastUpdate; // last update of position
   int stop_servo;
+  int i;
 
 public: 
-  Sweeper(int interval, unsigned long servo_open_interval, unsigned long servo_closed_interval)
+  Sweeper(int interval)
   {
     updateInterval = interval;
-    open_interval = servo_open_interval;
-    closed_interval = servo_closed_interval;
-    increment = 1;
+    if (SERVO_END>SERVO_START){
+        increment = 1;
+    }
+    else {
+        increment = -1;      
+    }
   }
   
   void Attach(int pin)
   {
     servo.attach(pin);
+    servo.write(SERVO_START);
   }
   
   void Detach()
@@ -58,28 +80,54 @@ public:
     servo.detach();
   }
   
-  void Update(unsigned long currentMillis)
+  void Reset(){
+    servo.write(SERVO_START);
+    pos=SERVO_START;
+    if (SERVO_END>SERVO_START){
+      increment = 1;
+    }
+    else{
+      increment = -1;
+    }
+  }
+  
+  void Update(unsigned long currentMillis, int delay_open_interval, int delay_closed_interval)
   {
     int delay_interval;
+    if (!control_ind){
+      return;
+    }
     
     if((currentMillis - lastUpdate) > updateInterval && !stop_servo)  // time to update
     {
       lastUpdate = millis();
       pos += increment;
       servo.write(pos);
-      if ((pos >= sweep_angle) || (pos <= 0)) // end of sweep
-      {
-        // reverse direction
-        increment = -increment;
-        stop_servo=true;
+      if (SERVO_END>SERVO_START){
+        if ((pos >= SERVO_END) || (pos <= SERVO_START)) // end of sweep
+        {
+          // reverse direction
+          increment = -increment;
+          stop_servo=true;
+          i=1;
+        }
+      }
+      else{
+        if ((pos <= SERVO_END) || (pos >= SERVO_START)) // end of sweep
+        {
+          // reverse direction
+          increment = -increment;
+          stop_servo=true;
+          i=-1;
+        }        
       }
     }
      if (stop_servo){
-       if (increment>0){
-          delay_interval=open_interval;
+       if (increment==i){
+          delay_interval=delay_closed_interval;
           }
        else{
-          delay_interval=closed_interval;
+          delay_interval=delay_open_interval;
           }
       if((currentMillis - lastUpdate) > delay_interval){
         stop_servo=false;
@@ -91,80 +139,168 @@ public:
 class Relay
 {
 	int relayPin;     
-	long OnTime;     
-	long OffTime;   
 	int relayState;             		
 	unsigned long previousMillis;  	
  
   public:
-  Relay(long on, long off)
+  Relay(void)
   {
-	relayPin = relay_pin;
-	pinMode(relayPin, OUTPUT);     
 	  
-	OnTime = on;
-	OffTime = off;
-	
-	relayState = LOW; 
+	relayState = EV_OPEN;
+  
 	previousMillis = 0;
   }
  
-  void Update(unsigned long currentMillis)
+  void Attach(int pin)
   {
-    if((relayState == HIGH) && (currentMillis - previousMillis >= OnTime))
-    {
-    	relayState = LOW;  
-      previousMillis = currentMillis;  
-      digitalWrite(relayPin, relayState);  
+	 relayPin = pin;      
+   digitalWrite(pin, relayState);
+   pinMode(pin, OUTPUT); 
+  }
+ 
+ void Reset(void)
+  {
+  digitalWrite(relayPin, EV_CLOSED);
+  previousMillis=0;
+  }
+ 
+  void Update(unsigned long currentMillis, unsigned long eTime, unsigned long iTime)
+  {
+    if (!control_ind){
+      relayState=EV_OPEN;
+      return;
     }
-    else if ((relayState == LOW) && (currentMillis - previousMillis >= OffTime))
+    if((relayState == EV_OPEN) && (currentMillis - previousMillis >= iTime))
     {
-      relayState = HIGH;  
+    	relayState = EV_CLOSED;  
+      previousMillis = currentMillis;  
+      digitalWrite(relayPin, relayState);
+      Serial.println("on");      
+    }
+    else if ((relayState == EV_CLOSED) && (currentMillis - previousMillis >= eTime))
+    {
+      relayState = EV_OPEN;  
       previousMillis = currentMillis;   
       digitalWrite(relayPin, relayState);	  
+      Serial.println("off");      
     }
   }
 };
 
-class Alarm
+class SerialInput
 {
-  int increment;        
-  unsigned long updateInterval;      
-  unsigned long lastUpdate; 
-  bool toggle;
+byte numChars = 10;
+char receivedChars[10];   // an array to store the received data
+boolean newData = false;
 
 public: 
-  Alarm(int interval)
+  SerialInput(void)
   {
-    updateInterval = interval;
-    increment = 1;
+  newData = false;
   }
     
-  void Update(unsigned long currentMillis)
+  void Update(void)
   {
-    if((currentMillis - lastUpdate) > updateInterval)  
-    {
-      lastUpdate = millis();
-      toggle=!toggle;
-    }
-    if (toggle){
-      tone(alarm_pin,1000);
-    }
-    else{
-      noTone(alarm_pin);
+    static byte ndx = 0;
+    char endMarker = '\n';
+    char rc;
+
+    while (Serial.available() > 0 && newData == false) {
+      rc = Serial.read();
+
+      if (rc != endMarker) {
+        receivedChars[ndx] = rc;
+        ndx++;
+        if (ndx >= numChars) {
+          ndx = numChars - 1;
+        }
+      }
+      else {
+        receivedChars[ndx] = '\0'; // terminate the string
+        ndx = 0;
+        newData = true;
+      }
     }
   }
-};
+
+ void ProcessInput(void)
+  {
+    int colon_pos;
+    float b;
+    float i;
+    int found=false;
+    if (newData == true) {
+      Serial.print("Received:");
+      Serial.println(receivedChars);
+      char * token = strtok(receivedChars, ",");
+      // loop through the string to extract all other tokens
+      if ( token != NULL ) {
+        i = atof(token);
+        if (i) {
+          token = strtok(NULL, ",");
+          if ( token != NULL ) {
+            b = atof(token);
+            if (b) {              
+              //I/E ratio variables
+              iTime=i; //ms Inspitory time (hardcoded for now)
+              bMin=b; //Respitory rate (hard coded for now)
+              if (bMin>0 && bMin<60){
+                cycle_time = 60/bMin; //Total cycle time
+                eTime = cycle_time - iTime; //Explitory time
+                if (eTime > 0){
+                  if (ie_ratio<=0.67){
+                  ie_ratio = iTime/eTime; // I/E Ratio (Inspiratory-to-expiratory time)
+                  found=true;
+                  Serial.println(ie_ratio); 
+                  startEVCycle();
+                  Serial.print("Inspitory time=");
+                  Serial.println(iTime);
+                  Serial.print("Explitory time=");
+                  Serial.println(eTime);
+                  Serial.print("IE Ratio=");
+                  Serial.println(ie_ratio);
+                  Serial.print("Cycle time=");
+                  Serial.println(cycle_time);  
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (!found){
+        Serial.println("Error enter iTime,bMin");
+      }
+      newData = false;
+    }
+  }
   
-Sweeper sweeper1(servo_speed, servo_open_interval, servo_closed_interval);
-Alarm alarm1(beep_interval);
-Relay relay1(relay_open_interval, relay_closed_interval);
- 
+};
+
+//Sweeper exhaust_valve;
+SerialInput serial_input;
+Sweeper exhaust_valve(SERVO_SPEED);
+
+void startEVCycle(){
+   exhaust_valve.Reset(); 
+   control_ind=true;
+}
+
 void setup() 
 { 
   Serial.begin(9600);
-  sweeper1.Attach(servo_pin);
+  Serial.println("Enter iTime,bMin");
   
+  //Set up the start and stop buttons
+  //pinMode(start_button_pin, INPUT);    
+  //pinMode(stop_button_pin, INPUT);    
+  
+  //Open exhaust valve on startup
+  //digitalWrite(EXHAUST_VALVE_PIN, EV_OPEN);
+  exhaust_valve.Attach(EXHAUST_VALVE_PIN);
+  //exhaust_valve.Attach(servo_pin);
+  
+  control_ind = false; //This will force it into a continuous loop. Set to False when buttons installed
   
   // Timer0 is already used for millis() - we'll just interrupt somewhere
   // in the middle and call the "Compare A" function below
@@ -176,14 +312,38 @@ void setup()
 SIGNAL(TIMER0_COMPA_vect) 
 {
   unsigned long currentMillis = millis();
-  //sweeper1.Update(currentMillis);
-  //alarm1.Update(currentMillis);
-  relay1.Update(currentMillis);
+  if (!control_ind){
+    serial_input.Update();
+    serial_input.ProcessInput();
+    
+  }
+  exhaust_valve.Update(currentMillis, iTime*1000, eTime*1000);
+
 } 
 
 void loop()
 {
 
+//Uncomment this code once the start and stop button are built
+// and set "control_ind = false;" in setup()
+/*
+  if (!digitalRead(start_button_pin) && !control_ind){ //start button pressed and control loop not runnning 
+    if (ie_ratio>0.67){
+      Serial.println("Cannot have ie ratio > 0.67");//Alarm & Error to display
+    }
+    else{
+      control_ind=true;  // start button is pressed and ventilator control loop begings
+      Serial.println("Start Routine");
+    }
+  }
+  
+  if (!digitalRead(stop_button_pin) && control_ind){ //stop button pressed and control is running 
+    control_ind=false;  // stop button is pressed and ventilator control loop stops
+    digitalWrite(EXHAUST_VALVE_PIN, EV_OPEN);  //stop cycle open EV valve	
+    Serial.println("Stop Routine"); 
+  }
+  */
+    
 }
 
 
