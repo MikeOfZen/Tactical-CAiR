@@ -23,8 +23,11 @@ General Notes:
 //exhaust_valve configuration
 #define EXHAUST_VALVE_PIN 9  //1=open valve;0=close valve
 //Servo configuration 
-#define SERVO_START 0 //degrees
-#define SERVO_END 90  //degrees
+
+//servo was zeroed with valve half open at position 90!!
+
+#define SERVO_START 100 //degrees
+#define SERVO_END 80  //degrees
 #define SERVO_SPEED 2 //1=fastest 10=slower, 20=slower etc... the actual speed depends on the servo
 //Polarity of relay settings
 #define EV_OPEN 1
@@ -345,6 +348,3 @@ void loop()
   */
     
 }
-
-
-
