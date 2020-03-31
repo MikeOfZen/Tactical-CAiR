@@ -2,7 +2,7 @@
  *  Application to configure and control the Tactical CAIR ventilator
  *  Jonathan Evans
  *  27-3-2020
- *  version 3.0
+ *  version 4.0
  
 Release Notes:
  - Added start stop button fucntionality
@@ -23,12 +23,9 @@ General Notes:
 //exhaust_valve configuration
 #define EXHAUST_VALVE_PIN 9  //1=open valve;0=close valve
 //Servo configuration 
-
-//servo was zeroed with valve half open at position 90!!
-
-#define SERVO_START 80 //degrees
-#define SERVO_END 130  //degrees
-#define SERVO_SPEED 2 //1=fastest 10=slower, 20=slower etc... the actual speed depends on the servo
+#define SERVO_START 0 //degrees
+#define SERVO_END 120  //degrees
+#define SERVO_SPEED 3 //1=fastest 10=slower, 20=slower etc... the actual speed depends on the servo
 //Polarity of relay settings
 #define EV_OPEN 1
 #define EV_CLOSED 0
@@ -42,8 +39,8 @@ float ie_ratio; // I/E Ratio (Inspiratory-to-expiratory time)
 
 //UI Inputs:
 //To be connected to the UI when it is built
-//int stop_button_pin = 3; //Start button pin
-//int start_button_pin = 2; //Stop button pin
+int stop_button_pin = 3; //Start button pin
+int start_button_pin = 2; //Stop button pin
 
 int control_ind = false; //flag used to start/stop the EV 1=Start, 0=Stop
 
@@ -61,7 +58,7 @@ class Sweeper
   int i;
 
 public: 
-  Sweeper(int interval)
+  Sweeper(unsigned long interval)
   {
     updateInterval = interval;
     if (SERVO_END>SERVO_START){
@@ -80,6 +77,7 @@ public:
   
   void Detach()
   {
+    servo.write(SERVO_START);
     servo.detach();
   }
   
@@ -342,9 +340,14 @@ void loop()
   
   if (!digitalRead(stop_button_pin) && control_ind){ //stop button pressed and control is running 
     control_ind=false;  // stop button is pressed and ventilator control loop stops
-    digitalWrite(EXHAUST_VALVE_PIN, EV_OPEN);  //stop cycle open EV valve	
+    //digitalWrite(EXHAUST_VALVE_PIN, EV_OPEN);  //stop cycle open EV valve	
+    exhaust_valve.Reset();
     Serial.println("Stop Routine"); 
   }
-  */
+*/
+
     
 }
+
+
+
