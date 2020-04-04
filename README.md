@@ -6,7 +6,7 @@ Arduino installation:
  - copy /Arduino/ventilator.h to your Arduino libraries TacticalCair directory (usually Arduino/libraries)
  - copy /Arduino/ventilator.cpp to your Arduino libraries TacticalCair directory (usually Arduino/libraries)
  - copy /Arduino/app/TCCombined durectory to your Arduino home directory
- - Close down all instances of the Ariono IDE and restart 
+ - Close down all instances of the Arduino IDE and restart 
  - Navigate to TCCombined directory and open TCCombined.ino
  - Upload script to the Arduino (see configurtaion seetings below first)
  
