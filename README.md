@@ -13,6 +13,7 @@ Arduino installation:
  Configuration:
  - Settings are configure in the ventilator.h file
 
+```ruby
 //Spreaker settings for the alarm
 #define SOUND_INTERVAL 100 // ms Piezo buzzer sounding interval on/off
 #define SPEAKER_PIN 11 // Piezzo buzzer pin
@@ -58,3 +59,4 @@ Arduino installation:
 #define STREAM_PROBE_READING 0 //Streams probe reading at 10ms, 0=OFF, 1=ON , NB:switch off for production
 #define C_PROBE_NO 0 //The probe pin used for streaming (0-3) being calibrated
 #define PRINT_PROBE_STATE_CHANGES 1 //Change in start will print to serial
+```
