@@ -8,13 +8,13 @@ Arduino installation:
  - copy /Arduino/app/TCCombined durectory to your Arduino home directory
  - Close down all instances of the Arduino IDE and restart 
  - Navigate to TCCombined directory and open TCCombined.ino
- - Upload script to the Arduino (see configurtaion seetings below first)
+ - Upload script to the Arduino (see configuration settings below first)
  
  Configuration:
  - Settings are configured in the ventilator.h file
 
 ```c++
-//Spreaker settings for the alarm
+//Speaker settings for the alarm
 #define SOUND_INTERVAL 100 // ms Piezo buzzer sounding interval on/off
 #define SPEAKER_PIN 11 // Piezzo buzzer pin
 #define AUTO_CLEAR_ALARM_TIME 5000 //(ms) All alarms auto clear after this threshold
@@ -32,7 +32,7 @@ Arduino installation:
 #define M_DEACTIVATION_THRESHOLD 800 //The analog reading value that clears an immersed state (i.e. sensor not immersed)
 
 //Apnea alarm settings
-#define APNEA_THRESHOLD 100 // The water sensor analog value for the the apnea alarm
+#define APNEA_THRESHOLD 100 // The water sensor analog value for the apnea alarm
 #define APNEA_ALARM_INTERVAL 5000 //(ms) The alarm will trigger if the water sensor has not crossed the threshold
 #define APNEA_PIN A0 // The apnea probe pin
 
@@ -74,10 +74,10 @@ stop probe - disables the probe alarm
 To start the ventilator valve enter iTime,bMin (e.g. 1,12)
  ```
  
-- The various functions of the ventolator system can be switched on/off using serial commands
+- The various functions of the ventilator system can be switched on/off using serial commands
 - Enter a serial command by typing the command into the top text box of the Arduino monitor and click send or press ENTER
-- If you want to start the ventilator valave cycle enter the Inhilation Time and Beats Per Minute (e.g. 1,12)
+- If you want to start the ventilator valve cycle enter the Inhalation Time and Beats Per Minute (e.g. 1,12)
 - If you want to start the manometer probes type "start probe"
-- If you wnat to start audible alamrs type "start alarm"
+- If you want to start audible alarms type "start alarm"
 - If you want to monitor the analog value of a probe set STREAM_PROBE_READING to 1 and C_PROBE_NO to the probe number (0-3) where 0=M_PIN1, 1=M_PIN2 etc... and use command "start probe" 
 
