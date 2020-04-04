@@ -13,7 +13,7 @@ Arduino installation:
  Configuration:
  - Settings are configure in the ventilator.h file
 
-```ruby
+```c++
 //Spreaker settings for the alarm
 #define SOUND_INTERVAL 100 // ms Piezo buzzer sounding interval on/off
 #define SPEAKER_PIN 11 // Piezzo buzzer pin
