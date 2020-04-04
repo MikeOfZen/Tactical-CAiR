@@ -11,7 +11,7 @@ Arduino installation:
  - Upload script to the Arduino (see configurtaion seetings below first)
  
  Configuration:
- - Settings are configure in the ventilator.h file
+ - Settings are configured in the ventilator.h file
 
 ```c++
 //Spreaker settings for the alarm
@@ -60,3 +60,24 @@ Arduino installation:
 #define C_PROBE_NO 0 //The probe pin used for streaming (0-3) being calibrated
 #define PRINT_PROBE_STATE_CHANGES 1 //Change in start will print to serial
 ```
+
+Application Functionality:
+ - The TCCombined application will start by sending this prompt to the serial monitor:
+ 
+ ```c++
+ stop alarm - disables audible alarms
+start alarm - enables audible alarms
+start apnea - enables the apnea alarm
+stop apnea - disables the apnea alarm
+start probe - enables the probe alarm
+stop probe - disables the probe alarm
+To start the ventilator valve enter iTime,bMin (e.g. 1,12)
+ ```
+ 
+- The various functions of the ventolator system can be switched on/off using serial commands
+- Enter a serial command by typing the command into the top text box of the Arduino monitor and click send or press ENTER
+- If you want to start the ventilator valave cycle enter the Inhilation Time and Beats Per Minute (e.g. 1,12)
+- If you want to start the manometer probes type "start probe"
+- If you wnat to start audible alamrs type "start alarm"
+- If you want to monitor the analog value of a probe set STREAM_PROBE_READING to 1 and C_PROBE_NO to the probe number (0-3) where 0=M_PIN1, 1=M_PIN2 etc... and use command "start probe" 
+
