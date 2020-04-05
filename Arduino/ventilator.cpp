@@ -191,7 +191,7 @@ void Apnea:: Update(unsigned long currentMillis)
     }   
   }
 
- 
+
 Sweeper:: Sweeper(unsigned long interval)
   {
     updateInterval = interval;

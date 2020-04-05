@@ -49,12 +49,12 @@
 #define APNEA_PIN A0 // The apnea probe pin
 
 //Exhaust valve settings
-#define EXHAUST_VALVE_PIN 2  //1=open valve;0=close valve
+#define EXHAUST_VALVE_PIN 9  //1=open valve;0=close valve
 
 //Servo configuration 
 #define SERVO_START 0 //degrees
 #define SERVO_END 90 //degrees
-#define SERVO_SPEED 1 //1=fastest 10=slower, 20=slower etc... the actual speed depends on the servo
+#define SERVO_SPEED 2 //1=fastest 10=slower, 20=slower etc... the actual speed depends on the servo
 
 //Polarity of relay settings
 #define EV_OPEN 1
@@ -68,7 +68,7 @@
 //Repeat above for each probe to check all sensors are behaving in same
 //Once complete configure the M_ACTIVATION_THRESHOLD and M_DECTIVATION_THRESHOLD 
 //set PRINT_PROBE_STATE_CHANGES to 1 to observe change in state of each probe in real time 
-#define STREAM_PROBE_READING 1 //Streams probe reading at 10ms, 0=OFF, 1=ON , NB:switch off for production
+#define STREAM_PROBE_READING 0 //Streams probe reading at 10ms, 0=OFF, 1=ON , NB:switch off for production
 #define C_PROBE_NO 1 //The probe pin used for streaming (0-3) being calibrated
 #define PRINT_PROBE_STATE_CHANGES 1 //Change in start will print to serial
 
