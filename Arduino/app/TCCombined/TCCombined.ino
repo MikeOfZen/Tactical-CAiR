@@ -1,8 +1,8 @@
 /* TACTICAL CAIR
  *  Combined Controller and Monitor for the Tactical CAIR Ventilator 
  *  Jonathan Evans
- *  27-3-2020
- *  version 1.0
+ *  05-04-2020
+ *  version 2.0
  
 Release Notes:
 
@@ -35,6 +35,7 @@ int alarm_ind; //used by auto_clear_timer
 
 //Manometer variables
 int probe_status[4]; //global variable to hold the status of each probe
+int prev_status[4]; //global variable to hold the status of each probe
 float probe_reading[4]; //global variable to hold the analog reading of the sensor when it changes state
 
 //I/E ratio variables
@@ -72,16 +73,8 @@ void setup()
   OCR0A = 0xAF;
   TIMSK0 |= _BV(OCIE0A);
   
-  //Initialize variables
-  probe_status[0]=false; //Top probe should be exposed on startup
-  probe_status[1]=false;
-  probe_status[2]=false;
-  probe_status[3]=true; //Bottomprobe should be immersed on startup
+  reset_probes();
 
-  for (int i=0;i<4;i++){
-    probe_reading[i]=0;
-  }
-  
   //Attach the exhaust valve relay
   exhaust_valve.Attach(EXHAUST_VALVE_PIN);
   
@@ -134,42 +127,27 @@ SIGNAL(TIMER0_COMPA_vect)
 
 void loop()
 {
-  
-  bool prev_status[4];
   int i;
   unsigned int currentMillis;
   
   //The main loop monitors the manometer probe global variables
   //and print change in state to the screen if PRINT_PROBE_STATE_CHANGES if set to 1
   if (PRINT_PROBE_STATE_CHANGES){
-    prev_status[0]=false; //Top probe should be exposed on startup
-    prev_status[1]=false;
-    prev_status[2]=false;
-    prev_status[3]=true; //Bottomprobe should be immersed on startup
     while (true){
       currentMillis = millis();
       for (i=0;i<4;i++){
-        if (prev_status[i]!=probe_status[i]){
-          Serial.print("Probe:");
-          Serial.print(i);
-          if (probe_status[i]==true) Serial.print(",IMMERSED,");
-          if (probe_status[i]==false) Serial.print(",EXPOSED,");
-          Serial.println(probe_reading[i]);
+        if (prev_status[i]!=probe_status[i] && probe_status[i]!=2){
+          print_probe_status(i);
           prev_status[i]=probe_status[i];
         }
         //Temporary alarm rules, TBD 
         if ((i==0 and probe_status[i]==true) or //Alarm if the top probe is immersed 
             (i==3 and probe_status[i]==false)){ //Alarm if bottom sensor is exposed
           sound_alarm=true;
-          //prev_status[0]=false;
-          //prev_status[3]=true;
         }
       } 
       if (!stop_probe_alarms){
-        water_sensor1.Update(currentMillis);
-        water_sensor2.Update(currentMillis);
-        water_sensor3.Update(currentMillis);
-        water_sensor4.Update(currentMillis);
+        read_probes();
       } 
     }    
   }
