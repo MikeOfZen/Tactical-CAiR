@@ -26,10 +26,11 @@ extern int sound_alarm; //Alarm sounds when set to 1
 extern unsigned long auto_clear_timer;
 extern int alarm_ind; //used by auto_clear_timer
 extern int probe_status[4]; //global variable to hold the status of each probe
+extern int prev_status[4]; //global variable to hold the status of each probe
 extern float probe_reading[4]; //global variable to hold the analog reading of the sensor when it changes state
 //I/E ratio variables
-extern float iTime; //ms Inspitory time (hardcoded for now)
-extern int bMin; //Respitory rate (hard coded for now)
+extern float iTime; //ms Inspitory time 
+extern int bMin; //Respitory rate 
 extern float cycle_time; //Total cycle time
 extern float eTime; //Explitory time
 extern float ie_ratio; // I/E Ratio (Inspiratory-to-expiratory time)
@@ -67,20 +68,24 @@ void WaterSensor::Update(unsigned long currentMillis)
     current_reading = get_analog_reading(pin);
     if (STREAM_PROBE_READING){
       if (probe_no==C_PROBE_NO){
-        Serial.println(current_reading);    
+        Serial.print(current_reading);
+        Serial.print(",");
+        Serial.print(probe_status[C_PROBE_NO]);      
+        Serial.print(",");
+        Serial.println(probe_reading[C_PROBE_NO]);        
       }
     }
 
-    if (probe_status[probe_no]==false){
-      if (current_reading > M_ACTIVATION_THRESHOLD){
+    if (probe_status[probe_no]==0 || probe_status[probe_no]==2){
+      if (current_reading < M_ACTIVATION_THRESHOLD){
         debounce_cnt++;
       }
       else {
         debounce_cnt=0;
       }      
     }
-    if (probe_status[probe_no]==true){
-      if (current_reading < M_DEACTIVATION_THRESHOLD){
+    if (probe_status[probe_no]==1  || probe_status[probe_no]==2){
+      if (current_reading > M_DEACTIVATION_THRESHOLD){
         debounce_cnt++;
       }
       else {
@@ -295,6 +300,93 @@ void SerialInput:: Update(void)
     }
   }
 
+int get_probe_status(int pin, int probe, int update_reading){
+  float current_reading=get_analog_reading(pin);
+  if (update_reading){
+    probe_reading[probe]=current_reading;
+    }
+    
+  if (current_reading < M_ACTIVATION_THRESHOLD){
+    return(1); //Immersed
+  }
+  if (current_reading > M_DEACTIVATION_THRESHOLD){
+    return(0); //exposed
+  }
+  return(2); //in transition
+}
+
+void print_probe_status(int i){
+  Serial.print("Probe:");
+  Serial.print(i);
+  if (probe_status[i]==1) Serial.print(",IMMERSED,");
+  if (probe_status[i]==0) Serial.print(",EXPOSED,");
+  if (probe_status[i]==2) Serial.print(",IN TRANSITION,");
+  Serial.println(probe_reading[i]);
+}
+
+void reset_probes(){
+  int i;
+  probe_status[0]=get_probe_status(M_PIN1,0,1); 
+  probe_status[1]=get_probe_status(M_PIN2,1,1);
+  probe_status[2]=get_probe_status(M_PIN3,2,1);
+  probe_status[3]=get_probe_status(M_PIN4,3,1); 
+  for (i=0;i<4;i++){
+    prev_status[i]=probe_status[i];
+    print_probe_status(i);
+  }
+}
+
+
+void read_probes(){
+  int debounce_count[4];
+  for (int x=0;x<4;x++){
+    debounce_count[x]=0;
+  }
+  
+  for (int x=0;x<DEBOUNCE_THRESHOLD;x++){
+    
+    if (probe_status[0]!=get_probe_status(M_PIN1,0,0)){
+      debounce_count[0]++;
+    } 
+    else {
+      debounce_count[0]=DEBOUNCE_THRESHOLD;
+    }
+    if (probe_status[1]!=get_probe_status(M_PIN2,1,0)){
+      debounce_count[1]++; 
+    } 
+    else {
+      debounce_count[1]=DEBOUNCE_THRESHOLD;
+    }
+    if (probe_status[2]!=get_probe_status(M_PIN3,2,0)){
+      debounce_count[2]++;
+    } 
+    else {
+      debounce_count[2]=DEBOUNCE_THRESHOLD;
+    }
+    if (probe_status[3]!=get_probe_status(M_PIN4,3,0)){
+      debounce_count[3]++; 
+    } 
+    else {
+      debounce_count[3]=DEBOUNCE_THRESHOLD;
+    }
+  }
+  if (debounce_count[0]==DEBOUNCE_THRESHOLD){
+    probe_status[0]=get_probe_status(M_PIN1,0,1);
+  }
+  if (debounce_count[1]==DEBOUNCE_THRESHOLD){
+    probe_status[1]=get_probe_status(M_PIN2,1,1);
+  }
+  if (debounce_count[2]==DEBOUNCE_THRESHOLD){
+    probe_status[2]=get_probe_status(M_PIN3,2,1);
+  }
+  if (debounce_count[3]==DEBOUNCE_THRESHOLD){
+    probe_status[3]=get_probe_status(M_PIN4,3,1);
+  }
+  if (STREAM_PROBE_READING){
+    Serial.println(probe_reading[C_PROBE_NO]);
+  }
+}
+
 void SerialInput:: ProcessInput(void)
   {
     int colon_pos;
@@ -323,6 +415,7 @@ void SerialInput:: ProcessInput(void)
         Serial.println("probe alarms started");
         stop_probe_alarms = false;
         found=true;
+        reset_probes();
       }
       if (String(receivedChars)=="stop probe"){
         Serial.println("probe alarms stopped");
@@ -376,4 +469,3 @@ void SerialInput:: ProcessInput(void)
       newData = false;
     }
   }
-  

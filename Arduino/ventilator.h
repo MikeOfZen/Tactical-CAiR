@@ -26,7 +26,7 @@
 #include "Arduino.h"
 #include <Servo.h> 
 
-//Spreaker settings for the alarm
+//Speaker settings for the alarm
 #define SOUND_INTERVAL 100 // ms Piezo buzzer sounding interval on/off
 #define SPEAKER_PIN 11 // Piezzo buzzer pin
 #define AUTO_CLEAR_ALARM_TIME 5000 //(ms) All alarms auto clear after this threshold
@@ -40,11 +40,11 @@
 #define M_PIN2 A1 //Pin number associated with the manometer probe 2
 #define M_PIN3 A2 //Pin number associated with the manometer probe 3
 #define M_PIN4 A3 //Pin number associated with the manometer probe 4
-#define M_ACTIVATION_THRESHOLD 200 //The analog reading value that triggers an immersed state
-#define M_DEACTIVATION_THRESHOLD 800 //The analog reading value that clears an immersed state (i.e. sensor not immersed)
+#define M_ACTIVATION_THRESHOLD 90//The analog reading value that triggers an immersed state
+#define M_DEACTIVATION_THRESHOLD 140 //The analog reading value that clears an immersed state (i.e. sensor not immersed)
 
 //Apnea alarm settings
-#define APNEA_THRESHOLD 100 // The water sensor analog value for the the apnea alarm
+#define APNEA_THRESHOLD 100 // The water sensor analog value for the apnea alarm
 #define APNEA_ALARM_INTERVAL 5000 //(ms) The alarm will trigger if the water sensor has not crossed the threshold
 #define APNEA_PIN A0 // The apnea probe pin
 
@@ -68,13 +68,17 @@
 //Repeat above for each probe to check all sensors are behaving in same
 //Once complete configure the M_ACTIVATION_THRESHOLD and M_DECTIVATION_THRESHOLD 
 //set PRINT_PROBE_STATE_CHANGES to 1 to observe change in state of each probe in real time 
-#define STREAM_PROBE_READING 0 //Streams probe reading at 10ms, 0=OFF, 1=ON , NB:switch off for production
-#define C_PROBE_NO 0 //The probe pin used for streaming (0-3) being calibrated
+#define STREAM_PROBE_READING 1 //Streams probe reading at 10ms, 0=OFF, 1=ON , NB:switch off for production
+#define C_PROBE_NO 1 //The probe pin used for streaming (0-3) being calibrated
 #define PRINT_PROBE_STATE_CHANGES 1 //Change in start will print to serial
 
 void startEVCycle();
 
 float get_analog_reading(int pin);
+void reset_probes();
+void print_probe_status(int i);
+int get_probe_status(int pin, int probe);
+void read_probes();
 
 class WaterSensor
 {
