@@ -51,10 +51,10 @@ int control_ind = false; //flag used to start/stop the EV 1=Start, 0=Stop
 //Definition of the class instances uses in this application
 Sweeper exhaust_valve(SERVO_SPEED);
 Alarm alarm1(SOUND_INTERVAL);
-WaterSensor water_sensor1(WATER_SENSOR_POLL_INTERVAL, M_PIN1, 0);
-WaterSensor water_sensor2(WATER_SENSOR_POLL_INTERVAL, M_PIN2, 1);
-WaterSensor water_sensor3(WATER_SENSOR_POLL_INTERVAL, M_PIN3, 2);
-WaterSensor water_sensor4(WATER_SENSOR_POLL_INTERVAL, M_PIN4, 3);
+//WaterSensor water_sensor1(WATER_SENSOR_POLL_INTERVAL, M_PIN1, 0);
+//WaterSensor water_sensor2(WATER_SENSOR_POLL_INTERVAL, M_PIN2, 1);
+//WaterSensor water_sensor3(WATER_SENSOR_POLL_INTERVAL, M_PIN3, 2);
+//WaterSensor water_sensor4(WATER_SENSOR_POLL_INTERVAL, M_PIN4, 3);
 //Apnea apnea(WATER_SENSOR_POLL_INTERVAL, APNEA_PIN);
 SerialInput serial_input;
 
@@ -141,8 +141,8 @@ void loop()
           prev_status[i]=probe_status[i];
         }
         //Temporary alarm rules, TBD 
-        if ((i==0 and probe_status[i]==true) or //Alarm if the top probe is immersed 
-            (i==3 and probe_status[i]==false)){ //Alarm if bottom sensor is exposed
+        if (i==0 and probe_status[i]==true){ //or //Alarm if the top probe is immersed 
+            //(i==3 and probe_status[i]==false)){ //Alarm if bottom sensor is exposed
           sound_alarm=true;
         }
       } 
