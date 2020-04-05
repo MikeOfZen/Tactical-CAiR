@@ -1,10 +1,12 @@
 int ANEODE_OUTPUT_PIN=24;
 int CATHODE_OUTPUT_PIN=23;
 
-int MANOMETER_INPUT_PINS[6]={A1,A2,A3,A4};
+int MANOMETER_INPUT_PINS[6]={A0,A1,A2,A3};
 
 int value=0;
 int dummy_value=0;
+
+int THERSHOLD=80;
 
 void setup() {
   // put your setup code here, to run once:
