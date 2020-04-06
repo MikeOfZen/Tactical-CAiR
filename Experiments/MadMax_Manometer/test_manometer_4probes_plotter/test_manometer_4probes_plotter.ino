@@ -7,13 +7,16 @@ int value=0;
 int dummy_value=0;
 
 int THERSHOLD=80;
+long zero_time = 0;
+long cur_time=0;
 
 void setup() {
   // put your setup code here, to run once:
 pinMode(ANEODE_OUTPUT_PIN, OUTPUT);
 pinMode(CATHODE_OUTPUT_PIN, OUTPUT);
-Serial.begin(9600);
+Serial.begin(115200);
 //no need for the analog setup
+zero_time =millis();
 }
 
 void loop() {
@@ -21,15 +24,16 @@ void loop() {
   // real read
 
   value=sense_probe(MANOMETER_INPUT_PINS[i]);
-  Serial.print("Probe");
-  Serial.print(i+1,DEC);
-  Serial.print(":");
-  Serial.print(value);
+  Serial.print("P");
+  Serial.print(i);
   Serial.print(" ");
-  delay(1);
+  Serial.print(value);
+  if(i<3)Serial.print(" ");
+ 
+  //delay(1);
   }
   Serial.println();
-  delay(1);
+  delay(10);
 }
 
 int sense_probe(int probe_pin){
