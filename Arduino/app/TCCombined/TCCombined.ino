@@ -2,7 +2,7 @@
  *  Combined Controller and Monitor for the Tactical CAIR Ventilator 
  *  Jonathan Evans
  *  05-04-2020
- *  version 2.0
+ *  version 3.0
  
 Release Notes:
 
@@ -65,7 +65,7 @@ void startEVCycle(){
 
 void setup() 
 { 
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   //Set up an interrupt to fire every 1ms
   // Timer0 is already used for millis() - we'll just interrupt somewhere
