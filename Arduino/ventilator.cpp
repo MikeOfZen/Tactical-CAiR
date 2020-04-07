@@ -19,6 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+// Version 3
 
 #include "ventilator.h"
 
@@ -316,12 +317,24 @@ int get_probe_status(int pin, int probe, int update_reading){
 }
 
 void print_probe_status(int i){
-  Serial.print("Probe:");
-  Serial.print(i);
-  if (probe_status[i]==1) Serial.print(",IMMERSED,");
-  if (probe_status[i]==0) Serial.print(",EXPOSED,");
-  if (probe_status[i]==2) Serial.print(",IN TRANSITION,");
-  Serial.println(probe_reading[i]);
+  for (int x=0;x<4;x++){
+    Serial.print("Probe:");
+    Serial.print(x);
+    if (probe_status[x]==1) Serial.print(",IMMERSED,");
+    if (probe_status[x]==0) Serial.print(",EXPOSED,");
+    if (probe_status[x]==2) Serial.print(",IN TRANSITION,");
+    if (x==i){
+      Serial.print("*");
+    }
+    Serial.print(probe_reading[x]);    
+    if (x<3){
+      Serial.print("; ");
+    }
+    else{
+      Serial.println("");
+      //Serial.println("======================================================================================================");
+    }
+  }
 }
 
 void reset_probes(){
@@ -332,8 +345,8 @@ void reset_probes(){
   probe_status[3]=get_probe_status(M_PIN4,3,1); 
   for (i=0;i<4;i++){
     prev_status[i]=probe_status[i];
-    print_probe_status(i);
   }
+  print_probe_status(5);
 }
 
 
@@ -383,7 +396,8 @@ void read_probes(){
     probe_status[3]=get_probe_status(M_PIN4,3,1);
   }
   if (STREAM_PROBE_READING){
-    Serial.println(probe_reading[C_PROBE_NO]);
+    //Serial.println(probe_reading[C_PROBE_NO]);
+    print_probe_status(5);
   }
 }
 

@@ -19,6 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+// Version 3
 
 #ifndef ventilator_h
 #define ventilator_h
@@ -35,13 +36,13 @@
 #define WATER_SENSOR_POLL_INTERVAL 100 //(ms) 
 #define ANEODE_OUTPUT_PIN 24 // Pin number associated with the manometer aneode 
 #define CATHODE_OUTPUT_PIN 22 // Pin number associated with the manometer cathode
-#define DEBOUNCE_THRESHOLD 5 //The number of consecutive readings above/below the threshold
+#define DEBOUNCE_THRESHOLD 20 //The number of consecutive readings above/below the threshold
 #define M_PIN1 A0 //Pin number associated with the manometer probe 1
 #define M_PIN2 A1 //Pin number associated with the manometer probe 2
 #define M_PIN3 A2 //Pin number associated with the manometer probe 3
 #define M_PIN4 A3 //Pin number associated with the manometer probe 4
-#define M_ACTIVATION_THRESHOLD 90//The analog reading value that triggers an immersed state
-#define M_DEACTIVATION_THRESHOLD 140 //The analog reading value that clears an immersed state (i.e. sensor not immersed)
+#define M_ACTIVATION_THRESHOLD 40//The analog reading value that triggers an immersed state
+#define M_DEACTIVATION_THRESHOLD 60 //The analog reading value that clears an immersed state (i.e. sensor not immersed)
 
 //Apnea alarm settings
 #define APNEA_THRESHOLD 100 // The water sensor analog value for the apnea alarm
@@ -68,8 +69,8 @@
 //Repeat above for each probe to check all sensors are behaving in same
 //Once complete configure the M_ACTIVATION_THRESHOLD and M_DECTIVATION_THRESHOLD 
 //set PRINT_PROBE_STATE_CHANGES to 1 to observe change in state of each probe in real time 
-#define STREAM_PROBE_READING 0 //Streams probe reading at 10ms, 0=OFF, 1=ON , NB:switch off for production
-#define C_PROBE_NO 1 //The probe pin used for streaming (0-3) being calibrated
+#define STREAM_PROBE_READING 1 //Streams probe reading at 10ms, 0=OFF, 1=ON , NB:switch off for production
+#define C_PROBE_NO 0 //The probe pin used for streaming (0-3) being calibrated
 #define PRINT_PROBE_STATE_CHANGES 1 //Change in start will print to serial
 
 void startEVCycle();
