@@ -36,7 +36,7 @@
 #define WATER_SENSOR_POLL_INTERVAL 100 //(ms) 
 #define ANEODE_OUTPUT_PIN 24 // Pin number associated with the manometer aneode 
 #define CATHODE_OUTPUT_PIN 22 // Pin number associated with the manometer cathode
-#define DEBOUNCE_THRESHOLD 20 //The number of consecutive readings above/below the threshold
+#define DEBOUNCE_THRESHOLD 5 //The number of consecutive readings above/below the threshold
 #define M_PIN1 A0 //Pin number associated with the manometer probe 1
 #define M_PIN2 A1 //Pin number associated with the manometer probe 2
 #define M_PIN3 A2 //Pin number associated with the manometer probe 3
